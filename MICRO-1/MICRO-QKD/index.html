@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Key Distribution (BB84) Clean Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header Controls -->
+        <header class="glass-panel main-header">
+            <div class="logo">
+                <span class="highlight">BB84 QKD</span> Protocol Simulator
+            </div>
+            <div class="controls">
+                <button id="btn-eve-toggle" class="btn btn-outline" onclick="toggleEve()">
+                    <span class="indicator empty"></span> Eve: OFF
+                </button>
+                <button id="btn-start" class="btn btn-primary" onclick="startSimulation()">Start Simulation</button>
+                <button id="btn-reset" class="btn btn-secondary" onclick="resetSimulation()">Reset</button>
+            </div>
+        </header>
+
+        <!-- Information Row -->
+        <section class="info-row">
+            <div class="glass-panel explainer-panel">
+                <h3>Quantum State Mapping</h3>
+                <div class="legend-grid">
+                    <div class="legend-item">
+                        <span class="legend-basis highlight">+ Basis (Rectilinear)</span>
+                        <div class="mapping-row">0 &rarr; <span class="quantum-symbol">|</span> (Vertical)</div>
+                        <div class="mapping-row">1 &rarr; <span class="quantum-symbol">—</span> (Horizontal)</div>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-basis highlight">x Basis (Diagonal)</span>
+                        <div class="mapping-row">0 &rarr; <span class="quantum-symbol">/</span> (Diagonal)</div>
+                        <div class="mapping-row">1 &rarr; <span class="quantum-symbol">\</span> (Anti-Diagonal)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel explainer-panel">
+                <h3>Key Concepts</h3>
+                <ul class="concept-list">
+                    <li><strong>Measurement Collapse:</strong> Measuring a photon using the wrong basis irrecoverably destroys its state into a random bit.</li>
+                    <li><strong>Public Comparison:</strong> Alice and Bob publicly share their <em>bases</em>, but rigidly hide their <em>bits</em>.</li>
+                    <li><strong>Sample Verification:</strong> A subset of bits is publicly revealed and then discarded to blindly check for Eve-induced errors.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Main Character Pipeline -->
+        <main class="pipeline-grid">
+            <!-- ALICE -->
+            <section class="glass-panel character-panel" id="alice-panel">
+                <div class="panel-header"><h2>Alice <span class="badge">Sender</span></h2></div>
+                <div class="data-group">
+                    <label>Generated Data Bits:</label>
+                    <div id="alice-bits" class="data-stream placeholder">Awaiting generation...</div>
+                </div>
+                <div class="data-group">
+                    <label>Assigned Random Bases:</label>
+                    <div id="alice-bases" class="data-stream placeholder">Awaiting generation...</div>
+                </div>
+                <div class="data-group">
+                    <label>Encoded Physical Quantum States:</label>
+                    <div id="alice-states" class="data-stream placeholder">Awaiting encoding...</div>
+                </div>
+            </section>
+
+            <!-- EVE & TRANSMISSION -->
+            <section class="center-panel">
+                <div class="transmission-path" id="transmission-path">
+                    <div class="arrow-container">
+                        <div class="arrow-line"></div>
+                        <div class="photon-particles"></div>
+                    </div>
+                </div>
+                <!-- Eve Interception -->
+                <div class="glass-panel character-panel eve-panel disabled" id="eve-panel">
+                    <div class="panel-header"><h2 class="danger-text">Eve <span class="badge danger">Eavesdropper</span></h2></div>
+                    <div class="data-group">
+                        <label>Guessed Bases:</label>
+                        <div id="eve-bases" class="data-stream placeholder">Offline</div>
+                    </div>
+                    <div class="data-group">
+                        <label>Forced Measured Bits:</label>
+                        <div id="eve-bits" class="data-stream placeholder">Offline</div>
+                        <div id="eve-collapse-info" class="collapse-info"></div>
+                    </div>
+                    <div class="data-group">
+                        <label>Forged Retransmitted States:</label>
+                        <div id="eve-states" class="data-stream placeholder">Offline</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BOB -->
+            <section class="glass-panel character-panel" id="bob-panel">
+                <div class="panel-header"><h2>Bob <span class="badge">Receiver</span></h2></div>
+                <div class="data-group">
+                    <label>Guessed Measurement Bases:</label>
+                    <div id="bob-bases" class="data-stream placeholder">Awaiting generation...</div>
+                </div>
+                <div class="data-group">
+                    <label>Collapsed Physical States:</label>
+                    <div id="bob-states" class="data-stream placeholder">Awaiting measurement...</div>
+                </div>
+                <div class="data-group">
+                    <label>Measured Bits:</label>
+                    <div id="bob-bits" class="data-stream placeholder">Awaiting decoding...</div>
+                    <div id="bob-collapse-info" class="collapse-info"></div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Pipeline Execution Logs -->
+        <section class="glass-panel log-panel full-width">
+            <ul id="step-logs" class="log-list">
+                <li class="log-item waiting">System ready. Configure Eve and start simulation.</li>
+            </ul>
+        </section>
+
+        <!-- RESULTS SECTION -->
+        <h2 class="section-title">Cryptographic Results Generation</h2>
+        
+        <div class="results-layout">
+            <!-- Block 1: Comparison -->
+            <div class="glass-panel result-block">
+                <h3>1. Public Basis Comparison</h3>
+                <p class="description-text">Bits measured on mismatching bases are useless garbage data and are completely discarded.</p>
+                <div class="table-container mt-15">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Index</th>
+                                <th>Alice Basis</th>
+                                <th>Bob Basis</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="basis-comparison-tbody">
+                            <tr><td colspan="4" class="placeholder text-center">Waiting for public exchange...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Block 2: Key Sifting -->
+            <div class="glass-panel result-block">
+                <h3>2. Sifted Key Raw Construction</h3>
+                <p class="description-text">Retaining only perfectly matched basis indices forms the "Sifted Key".</p>
+                
+                <div class="sifting-visualization mt-15" id="sifting-visualization">
+                    <div class="sifting-row"><span class="lbl">Alice Original:</span><div id="sifting-alice" class="sift-data">...</div></div>
+                    <div class="sifting-row" id="eve-sifting-container" style="display:none;"><span class="lbl danger-text">Eve Corrupted:</span><div id="sifting-eve" class="sift-data">...</div></div>
+                    <div class="sifting-row"><span class="lbl">Bob Formulated:</span><div id="sifting-bob" class="sift-data">...</div></div>
+                </div>
+                
+                <div class="metric-readout mt-15">
+                    <strong>Total Remaining Sifted Bits:</strong> <span id="sifted-key-len" class="highlight">0</span>
+                </div>
+            </div>
+
+            <!-- Block 3: Verification Phase -->
+            <div class="glass-panel result-block">
+                <h3>3. Sample Verification Phase</h3>
+                <p class="description-text">20-30% of the Sifted Key is randomly selected, publicly compared to hunt for Eve's disturbance, and permanently removed from the key array.</p>
+                
+                <div class="verification-visual mt-15">
+                    <label>Selected Sample Bits Output:</label>
+                    <div id="sample-bits-display" class="sample-display placeholder block">Awaiting verification...</div>
+                </div>
+
+                <div class="metrics-grid mt-15">
+                    <div class="metric-card small">
+                        <span class="label">Sample Error Rate</span>
+                        <span class="value" id="error-rate">0.0%</span>
+                        <div id="error-stats-breakdown" class="text-sm mt-10">0 Mismatches</div>
+                    </div>
+                    <div class="metric-card small">
+                        <span class="label">Environment Status</span>
+                        <span class="value status-badge" id="security-status">PENDING</span>
+                        <div class="text-sm mt-10" id="status-desc">Awaiting QBER check</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Block 4: Final Key -->
+            <div class="glass-panel result-block final-block">
+                <h3>4. Final Shared Secret Establishment</h3>
+                <p class="description-text">The remaining un-sampled sifted bits are completely unknown to the public and safely construct our quantum-secured symmetric key.</p>
+                <div id="final-key" class="final-key-display neon-glow empty mt-15">...</div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

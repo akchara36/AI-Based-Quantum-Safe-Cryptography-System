@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Threat Detection Engine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0c10;
+            --surface-color: rgba(31, 40, 51, 0.6);
+            --border-color: rgba(69, 162, 158, 0.2);
+            --text-color: #c5c6c7;
+            --primary-accent: #66fcf1;
+            --low-color: #2ecc71;
+            --suspicious-color: #f1c40f;
+            --malicious-color: #e74c3c;
+            --neon-glow: 0 0 10px rgba(102, 252, 241, 0.5), 0 0 20px rgba(102, 252, 241, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(69, 162, 158, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(102, 252, 241, 0.05), transparent 25%);
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--surface-color);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 10;
+            transition: all 0.4s ease;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            color: #fff;
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: var(--neon-glow);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #e0e0e0;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary-accent);
+            box-shadow: 0 0 8px rgba(102, 252, 241, 0.4);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            margin-top: 10px;
+            background: transparent;
+            color: var(--primary-accent);
+            border: 1px solid var(--primary-accent);
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            background: var(--primary-accent);
+            color: #000;
+            box-shadow: var(--neon-glow);
+        }
+
+        /* Loading & Results Overlay */
+        #result-overlay {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(11, 12, 16, 0.95);
+            border-radius: 16px;
+            z-index: 20;
+            padding: 30px;
+            text-align: center;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Loading Scanner */
+        .scanner-container {
+            width: 100px;
+            height: 100px;
+            border: 2px solid rgba(102, 252, 241, 0.2);
+            border-radius: 50%;
+            position: relative;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scanner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border-top: 3px solid var(--primary-accent);
+            animation: spin 1s linear infinite;
+        }
+
+        .scanner-icon {
+            font-size: 1.5rem;
+            color: var(--primary-accent);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            color: var(--primary-accent);
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .details-text {
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        /* Final Results Display */
+        .result-content {
+            display: none;
+            width: 100%;
+            animation: slideUp 0.5s ease forwards;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .threat-level {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px currentColor;
+        }
+
+        .threat-level.low { color: var(--low-color); }
+        .threat-level.suspicious { color: var(--suspicious-color); }
+        .threat-level.malicious { color: var(--malicious-color); }
+
+        .metric-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .metric-label { font-weight: 600; color: #aaa; }
+        .metric-value { font-family: 'Orbitron', sans-serif; font-weight: 700; }
+
+        .reasoning {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #ddd;
+            margin-bottom: 25px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px;
+            border-left: 3px solid currentColor;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .routing-msg {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .routing-spinner {
+            width: 14px;
+            height: 14px;
+            border: 2px solid #888;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Ambient background objects */
+        .ambient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 1;
+            opacity: 0.4;
+        }
+        .orb-1 { width: 300px; height: 300px; background: rgba(102, 252, 241, 0.15); top: -100px; left: -100px; }
+        .orb-2 { width: 400px; height: 400px; background: rgba(46, 204, 113, 0.1); bottom: -150px; right: -150px; }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2" id="orb-dynamic"></div>
+
+    <div class="container">
+        <h1>AI Net Analyzer</h1>
+        
+        <form id="analyzer-form">
+            <div class="form-group">
+                <label for="duration">Connection Duration (ms)</label>
+                <input type="number" id="duration" placeholder="e.g. 150" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="src_bytes">Source Bytes</label>
+                <input type="number" id="src_bytes" placeholder="e.g. 1200" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="dst_bytes">Destination Bytes</label>
+                <input type="number" id="dst_bytes" placeholder="e.g. 800" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="failed_logins">Failed Login Attempts</label>
+                <input type="number" id="failed_logins" placeholder="e.g. 0" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="connection_count">Connection Count</label>
+                <input type="number" id="connection_count" placeholder="e.g. 10" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="packet_rate">Packet Rate (pkts/sec)</label>
+                <input type="number" id="packet_rate" placeholder="e.g. 50" min="0" required>
+            </div>
+            <button type="submit">Analyze Traffic</button>
+        </form>
+
+        <div id="result-overlay">
+            
+            <!-- Loading State -->
+            <div id="loading-state">
+                <div class="scanner-container">
+                    <div class="scanner"></div>
+                    <div class="scanner-icon">AI</div>
+                </div>
+                <div class="status-text">ANALYZING</div>
+                <div class="details-text">Extracting telemetry features...</div>
+            </div>
+
+            <!-- Results State -->
+            <div id="result-content" class="result-content">
+                <div class="status-text" style="color: #fff; letter-spacing: 1px;">THREAT CLASSIFICATION</div>
+                <div id="threat-level-text" class="threat-level">LOW</div>
+                
+                <div class="metric-box">
+                    <div class="metric-label">Threat Score</div>
+                    <div id="threat-score-val" class="metric-value" style="color: inherit;">0</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Confidence</div>
+                    <div id="confidence-val" class="metric-value" style="color: inherit;">99%</div>
+                </div>
+
+                <div id="reasoning-text" class="reasoning">
+                    Normal packet flow detected. Proceeding safely.
+                </div>
+
+                <div class="routing-msg">
+                    <div class="routing-spinner"></div>
+                    <span id="routing-target">Routing to AES Module...</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('analyzer-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // 1. Gather inputs
+            const duration = parseFloat(document.getElementById('duration').value);
+            const srcBytes = parseFloat(document.getElementById('src_bytes').value);
+            const dstBytes = parseFloat(document.getElementById('dst_bytes').value);
+            const failedLogins = parseFloat(document.getElementById('failed_logins').value);
+            const connectionCount = parseFloat(document.getElementById('connection_count').value);
+            const packetRate = parseFloat(document.getElementById('packet_rate').value);
+
+            if (isNaN(duration) || isNaN(srcBytes) || isNaN(dstBytes) || isNaN(failedLogins) || isNaN(connectionCount) || isNaN(packetRate)) {
+                alert("Please enter valid positive numbers for all fields.");
+                return;
+            }
+
+            // 2. Show loading screen
+            const overlay = document.getElementById('result-overlay');
+            const loadingState = document.getElementById('loading-state');
+            const resultContent = document.getElementById('result-content');
+            
+            overlay.style.display = 'flex';
+            loadingState.style.display = 'block';
+            resultContent.style.display = 'none';
+
+            // Simulate AI Model latency (1.5 seconds)
+            setTimeout(() => {
+                analyzeAndRoute(srcBytes, dstBytes, failedLogins, connectionCount, packetRate);
+            }, 1500);
+        });
+
+        function analyzeAndRoute(srcBytes, dstBytes, failedLogins, connectionCount, packetRate) {
+            // Model Logic Weighted Scoring Formula
+            const score = (srcBytes * 0.3) + (dstBytes * 0.2) + (failedLogins * 200) + (connectionCount * 50) + (packetRate * 0.1);
+            
+            let threatClass = '';
+            let confidence = 0;
+            let targetURL = '';
+            let reasoning = '';
+            let colorClass = '';
+            let hexColor = '';
+
+            // Classification Rules
+            if (score < 3000) {
+                threatClass = 'LOW';
+                colorClass = 'low';
+                hexColor = '#2ecc71';
+                confidence = (100 - (score / 3000) * 10).toFixed(1); // 90-100%
+                targetURL = '../MICRO-AES/index.html';
+                reasoning = "Normal traffic pattern";
+            } else if (score < 7000) {
+                threatClass = 'SUSPICIOUS';
+                colorClass = 'suspicious';
+                hexColor = '#f1c40f';
+                confidence = (80 + ((score - 3000) / 4000) * 15).toFixed(1); // 80-95%
+                targetURL = '../MICRO-QKD/index.html';
+                reasoning = "Moderate anomaly detected";
+            } else {
+                threatClass = 'MALICIOUS';
+                colorClass = 'malicious';
+                hexColor = '#e74c3c';
+                confidence = Math.min(99.9, (95 + ((score - 7000) / 5000) * 4.9)).toFixed(1); // 95-99.9%
+                targetURL = '../MICRO-PQC/index.html';
+                
+                if (failedLogins > 0) {
+                    reasoning = "High traffic and multiple failed login attempts detected";
+                } else {
+                    reasoning = "High traffic anomaly detected across metrics";
+                }
+            }
+
+            displayResults(threatClass, score.toFixed(1), confidence, reasoning, colorClass, hexColor, targetURL);
+        }
+
+        function displayResults(threatClass, score, confidence, reasoning, colorClass, hexColor, targetURL) {
+            // Update UI
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('result-content').style.display = 'block';
+
+            const threatText = document.getElementById('threat-level-text');
+            threatText.textContent = threatClass;
+            threatText.className = 'threat-level ' + colorClass;
+
+            const scoreVal = document.getElementById('threat-score-val');
+            scoreVal.textContent = score;
+            scoreVal.style.color = hexColor;
+
+            const confVal = document.getElementById('confidence-val');
+            confVal.textContent = confidence + '%';
+            confVal.style.color = hexColor;
+
+            const reasonText = document.getElementById('reasoning-text');
+            reasonText.textContent = reasoning;
+            reasonText.style.color = hexColor;
+
+            const routeTarget = document.getElementById('routing-target');
+            let moduleName = targetURL.split('/')[1]; // MICRO-AES etc
+            routeTarget.textContent = `Routing to ${moduleName.replace('MICRO-', '')} module...`;
+
+            // Change background ambient color to reflect threat level
+            document.getElementById('orb-dynamic').style.background = hexColor + '22';
+
+            // Automatic redirection after delay
+            setTimeout(() => {
+                window.location.href = targetURL;
+            }, 3500); // Wait 3.5 seconds before routing so user can read it
+        }
+    </script>
+</body>
+</html>

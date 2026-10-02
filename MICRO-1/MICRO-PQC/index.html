@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post-Quantum Cryptography Simulation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <header class="app-header">
+        <div class="logo-area">
+            <h1>PQC Simulator <span>| Kyber x Dilithium</span></h1>
+        </div>
+        <button id="btn-info" class="btn outline">Why Post-Quantum?</button>
+    </header>
+
+    <!-- Info Modal -->
+    <div id="info-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Classical RSA vs. Post-Quantum</h2>
+            <div class="modal-split">
+                <div class="modal-col">
+                    <h3>Classical (RSA / ECC)</h3>
+                    <p>Relies on integer factorization or discrete logarithms.</p>
+                    <p class="vulnerability"><strong>Vulnerable to:</strong> Shor's Algorithm running on a sufficiently powerful Quantum Computer, breaking the encryption in polynomial time.</p>
+                </div>
+                <div class="modal-col">
+                    <h3>Post-Quantum (Lattice-Based)</h3>
+                    <p>Relies on Learning With Errors (LWE) over lattices.</p>
+                    <p class="strength"><strong>Resistant to:</strong> Both classical and quantum attacks. Finding the shortest vector in a multidimensional lattice remains extremely difficult even for quantum computers.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main class="simulation-container">
+        <!-- Sender (Alice) -->
+        <section class="panel sender-panel">
+            <div class="panel-header">
+                <h2>Sender (Alice)</h2>
+                <span class="role-badge signature">Dilithium (Sign)</span>
+            </div>
+            
+            <div class="card">
+                <h3>1. Key Generation</h3>
+                <p class="desc">Generate signing keys (Dilithium).</p>
+                <div class="key-display" id="sender-keys-display">
+                    <span class="placeholder">Keys not generated</span>
+                </div>
+                <button id="btn-gen-sender-keys" class="btn primary">Generate Sender Keys</button>
+            </div>
+
+            <div class="card">
+                <h3>3. Encrypt & Sign</h3>
+                <p class="desc">Requires Receiver's Kyber Public Key to encrypt.</p>
+                <input type="text" id="secret-message" placeholder="Enter a secret message..." disabled />
+                <button id="btn-encrypt-sign" class="btn secondary" disabled>Encrypt (Kyber) & Sign (Dilithium)</button>
+                
+                <div class="output-display hidden" id="sender-output">
+                    <div class="data-block">
+                        <label>Shared Secret (Derived)</label>
+                        <div class="code-box" id="sender-shared-secret"></div>
+                    </div>
+                    <div class="data-block">
+                        <label>Ciphertext (Kyber)</label>
+                        <div class="code-box" id="sender-ciphertext"></div>
+                    </div>
+                    <div class="data-block">
+                        <label>Signature (Dilithium)</label>
+                        <div class="code-box" id="sender-signature"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Communication Channel -->
+        <section class="channel">
+            <div class="channel-path">
+                <div class="line"></div>
+                <button id="btn-transmit" class="btn action floating" disabled>Transmit Data>></button>
+                <div class="line"></div>
+            </div>
+            <div class="channel-info" id="channel-payload">
+                <!-- Flashes when data goes across -->
+                Payload Empty
+            </div>
+        </section>
+
+        <!-- Receiver (Bob) -->
+        <section class="panel receiver-panel">
+            <div class="panel-header">
+                <h2>Receiver (Bob)</h2>
+                <span class="role-badge encryption">Kyber (Encrypt)</span>
+            </div>
+
+            <div class="card">
+                <h3>2. Key Generation</h3>
+                <p class="desc">Generate encryption keys (Kyber).</p>
+                <div class="key-display" id="receiver-keys-display">
+                    <span class="placeholder">Keys not generated</span>
+                </div>
+                <button id="btn-gen-receiver-keys" class="btn primary">Generate Receiver Keys</button>
+            </div>
+
+            <div class="card">
+                <h3>4. Verify & Decrypt</h3>
+                <p class="desc">Incoming packet requires verification before decryption.</p>
+                <div class="output-display incoming hidden" id="receiver-incoming">
+                    <span class="badge new-data">New Data Received</span>
+                </div>
+                <button id="btn-verify-decrypt" class="btn secondary" disabled>Verify (Dilithium) & Decrypt (Kyber)</button>
+
+                <div class="output-display results hidden" id="receiver-results">
+                    <div class="verification-status" id="verify-status"></div>
+                    <div class="data-block">
+                        <label>Recovered Shared Secret</label>
+                        <div class="code-box" id="receiver-shared-secret"></div>
+                    </div>
+                    <div class="data-block">
+                        <label>Decrypted Message</label>
+                        <div class="code-box highlight" id="decrypted-message"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AES Quantum-Safe Simulator</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>AES-256 Step-by-Step Simulator</h1>
+            <p class="subtitle">High-Fidelity Cryptographic Pipeline Visualization</p>
+        </header>
+
+        <main class="dashboard">
+            <!-- Left Panel: Input -->
+            <section class="panel left-panel glass-card">
+                <h2>Input Parameters</h2>
+
+                <div class="input-group">
+                    <label id="input-label" for="data-input">Input Data (Plaintext or Base64)</label>
+                    <textarea id="data-input" placeholder="Enter text or base64 here..."></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label for="password-input">Secret Password / Key</label>
+                    <input type="password" id="password-input" placeholder="E.g. secure_password_123">
+                    <button class="small-btn" id="generate-key-btn">Generate Random Key</button>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="primary-btn glow" id="encrypt-btn">Encrypt</button>
+                    <button class="primary-btn glow" id="decrypt-btn">Decrypt</button>
+                    <button class="secondary-btn" id="reset-btn">Reset</button>
+                </div>
+            </section>
+
+            <!-- Center Panel: Process Flow -->
+            <section class="panel center-panel glass-card">
+                <h2>Cryptographic Pipeline</h2>
+                <div class="pipeline" id="pipeline-container">
+                    <!-- Steps will be injected dynamically -->
+                </div>
+            </section>
+
+            <!-- Right Panel: Output -->
+            <section class="panel right-panel glass-card">
+                <h2>Pipeline Output</h2>
+                
+                <div class="output-group">
+                    <label>Byte Representation (Hex)</label>
+                    <div class="data-display" id="out-bytes">--</div>
+                </div>
+
+                <div class="output-group">
+                    <label>Derived Key (Hex)</label>
+                    <div class="data-display" id="out-key">--</div>
+                </div>
+
+                <div class="output-group">
+                    <label>Initialization Vector (Hex)</label>
+                    <div class="data-display" id="out-iv">--</div>
+                </div>
+
+                <div class="output-group">
+                    <label>Ciphertext (Base64) / Recovered Plaintext</label>
+                    <div class="data-display highlight-display" id="out-final">--</div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Bottom Panel: Logs -->
+        <footer class="panel bottom-panel glass-card">
+            <div class="log-header">
+                <h2>Execution Logs</h2>
+                <span class="status-indicator" id="global-status">Idle</span>
+            </div>
+            <div class="log-console" id="log-console">
+                <div class="log-entry system">[System] Ready to begin simulation.</div>
+            </div>
+        </footer>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
